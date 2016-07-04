@@ -42,7 +42,7 @@ dependencies {
     compile group: 'org.hdrhistogram', name: 'HdrHistogram', version: "2.1.4"
 
     // JBender API
-    compile group: "com.pinterest", name: "jbender", version: "1.0"
+    compile group: "com.pinterest", name: "jbender", version: "1.0.1-SNAPSHOT"
 
     // Logging
     compile group: "org.slf4j", name: "slf4j-api", version: "1.7.12"
@@ -54,7 +54,7 @@ dependencies {
 
 // Task building an handy self-contained load test capsule
 task capsule(type: FatCapsule) {
-    applicationClass "LoadTest"
+    applicationClass "ConcurrencyTest"
 
     capsuleManifest {
         // Aggressive optimizations and Quasar agent
@@ -65,7 +65,11 @@ task capsule(type: FatCapsule) {
 
 // Gradle JavaExec load test task
 task runLoadTest(type: JavaExec) {
-    main = "LoadTest"
+    if (project.hasProperty('host')) {
+        args(host)
+    }
+
+    main = "ConcurrencyTest"
 
     classpath = sourceSets.main.runtimeClasspath
 
