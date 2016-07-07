@@ -16,10 +16,14 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.pinterest.jbender.events.recording.Recorder.record;
 
 public class ConcurrencyTest {
+
+    private static final int noOfReq = 1_000_000;
+    private static final int concurrency = 1000;
 
     public static void main(final String[] args) throws SuspendExecution, InterruptedException, ExecutionException, IOReactorException, IOException {
 
@@ -36,13 +40,13 @@ public class ConcurrencyTest {
                          }
                      }, 10_000)) {
 
-            final Channel<HttpGet> requestCh = Channels.newChannel(-1);
-            final Channel<TimingEvent<CloseableHttpResponse>> eventCh = Channels.newChannel(-1);
+            final Channel<HttpGet> requestCh = Channels.newChannel(noOfReq);
+            final Channel<TimingEvent<CloseableHttpResponse>> eventCh = Channels.newChannel(noOfReq);
 
             // Requests generator
             new Fiber<Void>("req-gen", () -> {
                 // Bench handling 1k reqs
-                for (int i = 0; i < 1000; ++i) {
+                for (int i = 0; i < noOfReq; ++i) {
                     requestCh.send(new HttpGet(url));
                 }
 
@@ -57,7 +61,7 @@ public class ConcurrencyTest {
 
             // Main
             new Fiber<Void>("jbender", () -> {
-                JBender.loadTestConcurrency(10, 0, requestCh, requestExecutor, eventCh);
+                JBender.loadTestConcurrency(concurrency, 0, requestCh, requestExecutor, eventCh);
             }).start().join();
 
             //histogram.outputPercentileDistribution(System.out, 1.0);
