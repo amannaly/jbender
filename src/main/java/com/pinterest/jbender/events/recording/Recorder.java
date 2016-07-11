@@ -37,8 +37,14 @@ public interface Recorder<T> {
    */
   @SafeVarargs
   static <T> Fiber<Void> record(final ReceivePort<TimingEvent<T>> rp, final Recorder<T>... rs) {
-    return record("jbender-recorder", null, rp, rs);
+    return record("jbender-recorder", null, rp, 0, rs);
   }
+
+  @SafeVarargs
+  static <T> Fiber<Void> record(final ReceivePort<TimingEvent<T>> rp, final int warmUpRequets, final Recorder<T>... rs) {
+    return record("jbender-recorder", null, rp, warmUpRequets, rs);
+  }
+
 
   /**
    * Record events in a separate Fiber using one or more Recorders.
@@ -57,15 +63,21 @@ public interface Recorder<T> {
   static <T> Fiber<Void> record(final String fiberName,
                                 final FiberScheduler fe,
                                 final ReceivePort<TimingEvent<T>> rp,
+                                final int warmUpRequests,
                                 final Recorder<T>... rs)
   {
     return new Fiber<Void>(fiberName, fe != null ? fe : DefaultFiberScheduler.getInstance(), () -> {
+
+      int requestNumber = 0;
       while (true) {
         final TimingEvent<T> event = rp.receive();
 
         if (event == null) {
           break;
         }
+
+        if (requestNumber++ < warmUpRequests)
+          continue;
 
         for (final Recorder<T> r : rs) {
           r.record(event);

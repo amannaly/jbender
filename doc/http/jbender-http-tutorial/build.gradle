@@ -74,7 +74,15 @@ task runLoadTest(type: JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
 
     // Aggressive optimizations and Quasar agent
-    jvmArgs = ["-server", "-XX:+TieredCompilation", "-XX:+AggressiveOpts", "-javaagent:${configurations.quasar.iterator().next()}"] // Add "=vdc" to the Quasar agent to trace instrumentation
+    jvmArgs = [
+            "-server",
+            "-XX:+PrintGCDetails",
+            "X:+PrintGCTimeStamps",
+            "-Xloggc:/home/ubuntu/gc.log",
+            "-Xmx4096m",
+            "-Xms4096m",
+            "-javaagent:${configurations.quasar.iterator().next()}"
+    ] // Add "=vdc" to the Quasar agent to trace instrumentation
 
     // Enable this to troubleshoot instrumentation issues
     // systemProperties = ["co.paralleluniverse.fibers.verifyInstrumentation" : "true"]

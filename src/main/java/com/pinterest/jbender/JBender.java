@@ -368,6 +368,7 @@ public final class JBender {
           try {
             final RequestExecOutcome<Res> outcome = executeRequest(request, executor);
             if (curWarmupRequests <= 0) {
+                //TODO: add hdr histogram measurement here?
               report(0, 0, outcome, eventChannel);
             }
           } finally {

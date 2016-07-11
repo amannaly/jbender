@@ -23,7 +23,9 @@ import static com.pinterest.jbender.events.recording.Recorder.record;
 public class ConcurrencyTest {
 
     private static final int noOfReq = 1_000_000;
+    private static final int warmUpReq = 10_000;
     private static final int concurrency = 1000;
+    private static final int queueSize = 100_000;
 
     public static void main(final String[] args) throws SuspendExecution, InterruptedException, ExecutionException, IOReactorException, IOException {
 
@@ -40,8 +42,8 @@ public class ConcurrencyTest {
                          }
                      }, 10_000)) {
 
-            final Channel<HttpGet> requestCh = Channels.newChannel(noOfReq);
-            final Channel<TimingEvent<CloseableHttpResponse>> eventCh = Channels.newChannel(noOfReq);
+            final Channel<HttpGet> requestCh = Channels.newChannel(queueSize);
+            final Channel<TimingEvent<CloseableHttpResponse>> eventCh = Channels.newChannel(queueSize);
 
             // Requests generator
             new Fiber<Void>("req-gen", () -> {
@@ -53,15 +55,16 @@ public class ConcurrencyTest {
                 requestCh.close();
             }).start();
 
-            final Histogram histogram = new Histogram(1000L, 3);
+            final Histogram histogram = new Histogram(10000L, 3);
 
             // Event recording, both HistHDR and logging
             HdrHistogramRecorder hdrHistogramRecorder = new HdrHistogramRecorder(histogram, 1_000_000);
-            record(eventCh, hdrHistogramRecorder);
+            record(eventCh, warmUpReq, hdrHistogramRecorder);
 
             // Main
             new Fiber<Void>("jbender", () -> {
-                JBender.loadTestConcurrency(concurrency, 0, requestCh, requestExecutor, eventCh);
+                // with 5000 warmup requests.
+                JBender.loadTestConcurrency(concurrency, warmUpReq, requestCh, requestExecutor, eventCh);
             }).start().join();
 
             //histogram.outputPercentileDistribution(System.out, 1.0);
