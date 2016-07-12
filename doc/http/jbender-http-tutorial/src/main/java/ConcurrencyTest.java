@@ -61,10 +61,14 @@ public class ConcurrencyTest {
             HdrHistogramRecorder hdrHistogramRecorder = new HdrHistogramRecorder(histogram, 1_000_000);
             record(eventCh, warmUpReq, hdrHistogramRecorder);
 
+            LoadTestingSession loadTestingSession = new LoadTestingSession(args[0]);
+
             // Main
             new Fiber<Void>("jbender", () -> {
                 // with 5000 warmup requests.
+                loadTestingSession.startSession();
                 JBender.loadTestConcurrency(concurrency, warmUpReq, requestCh, requestExecutor, eventCh);
+                loadTestingSession.endSession();
             }).start().join();
 
             //histogram.outputPercentileDistribution(System.out, 1.0);

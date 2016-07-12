@@ -77,7 +77,7 @@ task runLoadTest(type: JavaExec) {
     jvmArgs = [
             "-server",
             "-XX:+PrintGCDetails",
-            "X:+PrintGCTimeStamps",
+            "-XX:+PrintGCTimeStamps",
             "-Xloggc:/home/ubuntu/gc.log",
             "-Xmx4096m",
             "-Xms4096m",
