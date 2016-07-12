@@ -64,12 +64,12 @@ public class ConcurrencyTest {
             LoadTestingSession loadTestingSession = new LoadTestingSession(args[0]);
 
             // Main
+            loadTestingSession.startSession();
             new Fiber<Void>("jbender", () -> {
                 // with 5000 warmup requests.
-                loadTestingSession.startSession();
                 JBender.loadTestConcurrency(concurrency, warmUpReq, requestCh, requestExecutor, eventCh);
-                loadTestingSession.endSession();
             }).start().join();
+            loadTestingSession.endSession();
 
             //histogram.outputPercentileDistribution(System.out, 1.0);
 
