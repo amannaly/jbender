@@ -54,7 +54,7 @@ dependencies {
 
 // Task building an handy self-contained load test capsule
 task capsule(type: FatCapsule) {
-    applicationClass "LoadTest"
+    applicationClass "ConcurrencyTest"
 
     capsuleManifest {
         // Aggressive optimizations and Quasar agent
@@ -65,7 +65,7 @@ task capsule(type: FatCapsule) {
 
 // Gradle JavaExec load test task
 task runLoadTest(type: JavaExec) {
-    main = "LoadTest"
+    main = "ConcurrencyTest"
 
     classpath = sourceSets.main.runtimeClasspath
 
